@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Environment Variables
+.env
+client/.env
+server/.env
+
+# Build outputs
+client/dist/
+client/dist-ssr/
+server/dist/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Editor/OS files
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.suo
