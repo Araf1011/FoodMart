@@ -5,9 +5,11 @@ import { useAppContext } from "../context/AppContext"
 
 const Navbar = () => {
     const [open, setOpen] = React.useState(false)
-    const { user, setUser, setShowUserLogin, navigate, getCartCount } = useAppContext()
+    const { token, setToken, setUser, navigate, getCartCount } = useAppContext()
     const logout = () => {
+        setToken('')
         setUser(null)
+        localStorage.removeItem('token')
         navigate('/login')
     }
     return (
@@ -33,7 +35,7 @@ const Navbar = () => {
                     <p className="absolute -top-2 -right-3 text-[10px] text-white bg-primary w-[18px] h-[18px] flex items-center justify-center rounded-full leading-none">{getCartCount()}</p>
                 </div>
 
-                {!user ?
+                {!token ?
                     (<button onClick={() => navigate('/login')} className="cursor-pointer px-8 py-2 bg-primary hover:bg-primary-dull transition text-white rounded-full">
                         Login
                     </button>)
@@ -59,11 +61,11 @@ const Navbar = () => {
                 <div className={`${open ? 'flex' : 'hidden'} absolute top-[60px] left-0 w-full bg-white shadow-md py-4 flex-col items-start gap-2 px-5 text-sm md:hidden`}>
                     <NavLink onClick={() => setOpen(false)} to="/" className="block">Home</NavLink>
                     <NavLink onClick={() => setOpen(false)} to="/products" className="block">All Products</NavLink>
-                    {user && (
+                    {token && (
                         <NavLink onClick={() => setOpen(false)} to="myorders" className="block">My Orders</NavLink>
                     )}
                     <NavLink onClick={() => setOpen(false)} to="/contact" className="hover:text-primary transition-colors block">Contact</NavLink>
-                    {!user ? (
+                    {!token ? (
                         <button onClick={() => {
                             setOpen(false)
                             navigate('/login');

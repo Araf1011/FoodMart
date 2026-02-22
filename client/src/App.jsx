@@ -9,11 +9,14 @@ import PlaceOrder from "./pages/PlaceOrder"
 import MyOrders from "./pages/MyOrders"
 import Login from "./pages/Login"
 import Contact from "./pages/Contact"
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const App = () => {
   const isSellerPath = useLocation().pathname.includes("seller")
   return (
     <div>
+      <ToastContainer />
       {!isSellerPath && <Navbar />}
       <div className={`${isSellerPath ? "" : "px-6 md:px-16 lg:px-24 xl:px-32"} min-h-screen`}>
         <Routes>

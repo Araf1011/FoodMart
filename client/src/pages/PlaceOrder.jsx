@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { useAppContext } from '../context/AppContext'
-import { dummyProducts, assets } from '../assets/assets'
+import { assets } from '../assets/assets'
+import axios from 'axios'
+import { toast } from 'react-toastify'
 
 const PlaceOrder = () => {
-    const { cartItems, navigate, user, setShowUserLogin } = useAppContext()
-    const [method, setMethod] = useState('cod') // Default to Cash on Delivery
+    const { products, cartItems, navigate, user, backendUrl, token, setCartItems } = useAppContext()
+    const [method, setMethod] = useState('cod')
 
     const [formData, setFormData] = useState({
         firstName: '',
@@ -24,38 +26,72 @@ const PlaceOrder = () => {
         setFormData(data => ({ ...data, [name]: value }))
     }
 
-    const onSubmitHandler = (event) => {
+    const onSubmitHandler = async (event) => {
         event.preventDefault()
+        try {
 
-        // Final login check
-        if (!user) {
-            navigate('/login')
-            return
+            let orderItems = []
+
+            for (const items in cartItems) {
+                if (cartItems[items] > 0) {
+                    const itemInfo = structuredClone(products.find(product => product._id === items))
+                    if (itemInfo) {
+                        itemInfo.quantity = cartItems[items]
+                        orderItems.push(itemInfo)
+                    }
+                }
+            }
+
+            let orderData = {
+                address: formData,
+                items: orderItems,
+                amount: total
+            }
+
+            switch (method) {
+
+                // API Calls for COD
+                case 'cod':
+                    const response = await axios.post(backendUrl + '/api/order/place', orderData, { headers: { token } })
+                    if (response.data.success) {
+                        setCartItems({})
+                        toast.success("Order Placed Successfully!")
+                        navigate('/myorders')
+                    } else {
+                        toast.error(response.data.message)
+                    }
+                    break;
+
+                case 'ssl':
+                    const responseSSL = await axios.post(backendUrl + '/api/order/sslcommerz', orderData, { headers: { token } })
+                    if (responseSSL.data.success) {
+                        window.location.replace(responseSSL.data.GatewayPageURL)
+                    } else {
+                        toast.error(responseSSL.data.message)
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+
+        } catch (error) {
+            console.log(error)
+            toast.error(error.message)
         }
-
-        // Validation for mandatory fields
-        const { firstName, lastName, email, street, city, phone } = formData
-        if (!firstName || !lastName || !email || !street || !city || !phone) {
-            alert("Please fill in all mandatory fields: Name, Email, Address, City, and Phone.")
-            return
-        }
-
-        // If validation passed
-        navigate('/myorders')
     }
 
-    // Redirect to login if user is not logged in when page loads
     useEffect(() => {
-        if (!user) {
+        if (!token) {
             navigate('/login')
         }
-    }, [user])
+    }, [token])
 
     const calculateTotal = () => {
         let total = 0;
         for (const items in cartItems) {
             if (cartItems[items] > 0) {
-                const product = dummyProducts.find(p => p._id === items)
+                const product = products.find(p => p._id === items)
                 if (product) {
                     total += product.offerPrice * cartItems[items]
                 }

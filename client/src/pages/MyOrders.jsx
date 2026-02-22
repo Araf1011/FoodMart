@@ -1,27 +1,42 @@
 import React, { useEffect, useState } from 'react'
 import { useAppContext } from '../context/AppContext'
-import { dummyProducts, assets } from '../assets/assets'
+import { assets } from '../assets/assets'
+import axios from 'axios'
+import { toast } from 'react-toastify'
 
 const MyOrders = () => {
-    const { cartItems } = useAppContext()
+    const { backendUrl, token } = useAppContext()
     const [orderData, setOrderData] = useState([])
 
-    useEffect(() => {
-        // For demo purposes, we'll just show items currently in the cart as "Placed Orders"
-        const tempData = [];
-        for (const items in cartItems) {
-            if (cartItems[items] > 0) {
-                tempData.push({
-                    _id: items,
-                    quantity: cartItems[items],
-                    status: 'Order Placed',
-                    date: new Date().toLocaleDateString(),
-                    payment: 'Pending'
-                })
+    const loadOrderData = async () => {
+        try {
+            if (!token) {
+                return null
             }
+
+            const response = await axios.post(backendUrl + '/api/order/userorders', {}, { headers: { token } })
+            if (response.data.success) {
+                let allOrdersItem = []
+                response.data.orders.map((order) => {
+                    order.items.map((item) => {
+                        item['status'] = order.status
+                        item['payment'] = order.payment
+                        item['paymentMethod'] = order.paymentMethod
+                        item['date'] = order.date
+                        allOrdersItem.push(item)
+                    })
+                })
+                setOrderData(allOrdersItem.reverse())
+            }
+        } catch (error) {
+            console.log(error)
+            toast.error(error.message)
         }
-        setOrderData(tempData);
-    }, [cartItems])
+    }
+
+    useEffect(() => {
+        loadOrderData()
+    }, [token])
 
     return (
         <div className='py-10 flex flex-col gap-10'>
@@ -38,20 +53,18 @@ const MyOrders = () => {
                     </div>
                 ) : (
                     orderData.map((item, index) => {
-                        const product = dummyProducts.find(p => p._id === item._id)
-                        if (!product) return null
-
                         return (
                             <div key={index} className='p-6 bg-white border border-gray-200 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-md transition-all'>
                                 <div className='flex items-center gap-6'>
-                                    <img src={product.image[0]} className='w-20 h-20 rounded-xl bg-gray-50 object-contain p-2' alt="" />
+                                    <img src={item.image[0]} className='w-20 h-20 rounded-xl bg-gray-50 object-contain p-2' alt="" />
                                     <div className='flex flex-col gap-1'>
-                                        <h3 className='font-bold text-gray-800 text-lg uppercase tracking-tight'>{product.name}</h3>
+                                        <h3 className='font-bold text-gray-800 text-lg uppercase tracking-tight'>{item.name}</h3>
                                         <div className='flex items-center gap-4 text-sm text-gray-500 font-medium'>
-                                            <p>৳{product.offerPrice}</p>
+                                            <p>৳{item.offerPrice}</p>
                                             <p>Quantity: {item.quantity}</p>
                                         </div>
-                                        <p className='text-xs text-gray-400 mt-1'>Date: <span className='text-gray-600 font-bold'>{item.date}</span></p>
+                                        <p className='text-xs text-gray-400 mt-1'>Date: <span className='text-gray-600 font-bold'>{new Date(item.date).toDateString()}</span></p>
+                                        <p className='text-xs text-gray-400'>Payment: <span className='text-gray-600 font-bold uppercase'>{item.paymentMethod}</span></p>
                                     </div>
                                 </div>
 
@@ -60,8 +73,8 @@ const MyOrders = () => {
                                         <div className='w-2 h-2 rounded-full bg-green-500 animate-pulse' />
                                         <p className='text-xs font-black uppercase tracking-widest'>{item.status}</p>
                                     </div>
-                                    <button className='px-6 py-2 border border-gray-200 text-sm font-bold text-gray-600 rounded-xl hover:bg-gray-50 transition-all active:scale-95'>
-                                        Track Shipment
+                                    <button onClick={loadOrderData} className='px-6 py-2 border border-gray-200 text-sm font-bold text-gray-600 rounded-xl hover:bg-gray-50 transition-all active:scale-95 shadow-sm'>
+                                        Track Order
                                     </button>
                                 </div>
                             </div>

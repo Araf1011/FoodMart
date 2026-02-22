@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { dummyProducts, categories } from '../assets/assets'
+import { useAppContext } from '../context/AppContext'
+import { categories } from '../assets/assets'
 import ProductCard from '../components/ProductCard'
 
 const Products = () => {
     const { category } = useParams()
+    const { products } = useAppContext()
     const [filteredProducts, setFilteredProducts] = useState([])
     const [selectedCategory, setSelectedCategory] = useState(category || 'All')
     const [priceRange, setPriceRange] = useState(1000) // Default max price
 
     useEffect(() => {
-        let filtered = [...dummyProducts];
+        let filtered = [...products];
 
         // Apply Category Filter
         if (selectedCategory !== 'All') {
@@ -21,7 +23,7 @@ const Products = () => {
         filtered = filtered.filter(p => p.offerPrice <= priceRange)
 
         setFilteredProducts(filtered)
-    }, [selectedCategory, priceRange])
+    }, [selectedCategory, priceRange, products])
 
     useEffect(() => {
         if (category) {

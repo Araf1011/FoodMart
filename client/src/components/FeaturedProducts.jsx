@@ -1,11 +1,12 @@
 import React from "react"
-import { dummyProducts } from "../assets/assets"
+import { useAppContext } from "../context/AppContext"
 import ProductCard from "./ProductCard"
 import { Link } from "react-router-dom"
 
 const FeaturedProducts = () => {
+    const { products } = useAppContext();
     // Show first 8 products as featured
-    const featured = dummyProducts.slice(0, 8);
+    const featured = products.slice(0, 8);
 
     return (
         <div className="flex flex-col gap-6 py-8">

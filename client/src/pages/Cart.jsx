@@ -3,7 +3,7 @@ import { useAppContext } from '../context/AppContext'
 import { dummyProducts, assets } from '../assets/assets'
 
 const Cart = () => {
-    const { cartItems, addToCart, removeFromCart, updateQuantity, navigate, user } = useAppContext()
+    const { products, cartItems, addToCart, removeFromCart, updateQuantity, navigate, token } = useAppContext()
     const [cartData, setCartData] = useState([])
 
     useEffect(() => {
@@ -21,13 +21,13 @@ const Cart = () => {
 
     const calculateTotal = () => {
         return cartData.reduce((acc, item) => {
-            const product = dummyProducts.find(p => p._id === item._id)
+            const product = products.find(p => p._id === item._id)
             return acc + (product ? product.offerPrice * item.quantity : 0)
         }, 0)
     }
 
     const proceedToCheckout = () => {
-        if (user) {
+        if (token) {
             navigate('/place-order')
         } else {
             navigate('/login')
@@ -57,7 +57,7 @@ const Cart = () => {
                         </div>
                     ) : (
                         cartData.map((item, index) => {
-                            const product = dummyProducts.find(p => p._id === item._id)
+                            const product = products.find(p => p._id === item._id)
                             if (!product) return null
 
                             return (

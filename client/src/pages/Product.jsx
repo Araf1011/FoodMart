@@ -1,30 +1,30 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
-import { dummyProducts, assets } from '../assets/assets'
+import { assets } from '../assets/assets'
 import ProductCard from '../components/ProductCard'
 
 const Product = () => {
     const { productId } = useParams()
-    const { addToCart, removeFromCart, cartItems, navigate } = useAppContext()
+    const { products, addToCart, removeFromCart, cartItems, navigate } = useAppContext()
     const [productData, setProductData] = useState(null)
     const [mainImage, setMainImage] = useState('')
     const [relatedProducts, setRelatedProducts] = useState([])
 
     useEffect(() => {
-        const product = dummyProducts.find(p => p._id === productId)
+        const product = products.find(p => p._id === productId)
         if (product) {
             setProductData(product)
             setMainImage(product.image[0])
 
             // Filter related products by category
-            const related = dummyProducts.filter(p => p.category === product.category && p._id !== productId).slice(0, 4)
+            const related = products.filter(p => p.category === product.category && p._id !== productId).slice(0, 4)
             setRelatedProducts(related)
 
             // Scroll to top when product changes
             window.scrollTo(0, 0)
         }
-    }, [productId])
+    }, [productId, products])
 
     if (!productData) return <div className="min-h-[60vh] flex items-center justify-center">Loading product...</div>
 
@@ -98,12 +98,12 @@ const Product = () => {
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                        {productData.description.map((point, index) => (
+                        {productData.description.split(',').map((point, index) => (
                             <div key={index} className="flex items-center gap-3 text-sm text-gray-700 font-medium">
                                 <div className="p-1 bg-primary/20 rounded-full">
                                     <img src={assets.add_icon} className="w-2.5 h-2.5 text-primary" />
                                 </div>
-                                {point}
+                                {point.trim()}
                             </div>
                         ))}
                     </div>

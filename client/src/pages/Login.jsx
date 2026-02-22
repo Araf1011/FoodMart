@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { useAppContext } from '../context/AppContext'
-import { assets } from '../assets/assets'
+import axios from 'axios'
+import { toast } from 'react-toastify'
 
 const Login = () => {
     const [currentState, setCurrentState] = useState('Login')
-    const { user, setUser, navigate } = useAppContext()
+    const { token, setToken, navigate, backendUrl } = useAppContext()
 
     const [name, setName] = useState('')
     const [password, setPassword] = useState('')
@@ -12,32 +13,40 @@ const Login = () => {
 
     const onSubmitHandler = async (event) => {
         event.preventDefault()
-        // Simulated Login/Signup logic
-        if (currentState === 'Sign Up') {
-            if (!name || !email || !password) {
-                alert("Please fill all fields")
-                return
+        try {
+            if (currentState === 'Sign Up') {
+                const response = await axios.post(backendUrl + '/api/user/register', { name, email, password })
+                if (response.data.success) {
+                    setToken(response.data.token)
+                    localStorage.setItem('token', response.data.token)
+                    toast.success("Account created successfully!")
+                } else {
+                    toast.error(response.data.message)
+                }
+            } else {
+                const response = await axios.post(backendUrl + '/api/user/login', { email, password })
+                if (response.data.success) {
+                    setToken(response.data.token)
+                    localStorage.setItem('token', response.data.token)
+                    toast.success("Logged in successfully!")
+                } else {
+                    toast.error(response.data.message)
+                }
             }
-            setUser({ name, email })
-            alert("Account created successfully!")
-        } else {
-            if (!email || !password) {
-                alert("Please fill all fields")
-                return
-            }
-            setUser({ name: "Demo User", email })
-            alert("Logged in successfully!")
+        } catch (error) {
+            console.log(error)
+            toast.error(error.message)
         }
     }
 
     useEffect(() => {
-        if (user) {
+        if (token) {
             navigate('/')
         }
-    }, [user])
+    }, [token])
 
     return (
-        <div className='flex flex-col items-center w-[90%] sm:max-w-md m-auto mt-14 gap-4 text-gray-800 bg-white p-8 rounded-3xl border border-gray-100 shadow-xl shadow-gray-100'>
+        <div className='flex flex-col items-center w-[90%] sm:max-w-md m-auto mt-24 mb-20 gap-4 text-gray-800 bg-white p-10 rounded-[40px] border border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.05)]'>
             <div className='inline-flex items-center gap-2 mb-2 mt-2'>
                 <p className='text-3xl font-black uppercase tracking-tight'>{currentState}</p>
                 <hr className='border-none h-[2px] w-8 bg-primary rounded-full' />
